@@ -1,0 +1,33 @@
+# Data Files
+# Ignore the folder containing the 10,000 XML files
+
+books_xml/
+data_xml/
+*.zip
+
+# Ignore the generated output file 
+cleaned_books.txt
+
+# Python Environment
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+venv/
+ENV/
+
+# C++ Compilation Artifacts
+*.o
+*.obj
+*.exe
+*.out
+*.app
+build/
+bin/
+.vscode/
+.idea/
+
+# OS Specific Files
+.DS_Store
+Thumbs.db
