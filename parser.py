@@ -10,32 +10,43 @@ def limpiar(texto):
     return " ".join(limpio.split())
 
 
+def get_text(element, tag, default="0"):
+    """findtext devuelve None si el tag no existe, o string vacio si existe pero esta vacio."""
+    val = element.findtext(tag, default=default)  # findtext, sin guion bajo
+    return val.strip() if val and val.strip() else default
+
+
 def leer_xml(ruta):
     try:
         tree = ET.parse(ruta)
         root = tree.getroot()
 
+        book = root.find("book")
+        if book is None:
+            print(f"[WARN] Sin tag <book> en {ruta}")
+            return None
+
         # Datos basicos del libro
-        id_libro = root.findtext("id", default="0")
-        titulo    = limpiar(root.findtext("title", default="N/A"))
-        isbn      = root.findtext("isbn", default="0")
-        anio      = root.findtext("publication_year", default="0")
-        idioma    = root.findtext("language_code", default="N/A")
-        desc      = limpiar(root.findtext("description", default="Sin desc"))
-        rating    = root.findtext("average_rating", default="0.0")
-        paginas   = root.findtext("num_pages", default="0")
+        id_libro = get_text(book, "id")
+        titulo   = limpiar(get_text(book, "title", default="N/A"))
+        isbn     = get_text(book, "isbn")
+        anio     = get_text(book, "publication_year")
+        idioma   = get_text(book, "language_code", default="N/A")
+        desc     = limpiar(get_text(book, "description", default="Sin desc"))
+        rating   = get_text(book, "average_rating", default="0.0")
+        paginas  = get_text(book, "num_pages")
 
         # Libros similares
         # Separador anidado: campos internos con ";" y libros entre si con "#"
         # Se sanitizan ";" y "#" en los titulos para no romper el formato
         similares = []
-        tag_similares = root.find("similar_books")
+        tag_similares = book.find("similar_books")
 
         if tag_similares is not None:
             for b in tag_similares.findall("book"):
-                t = limpiar(b.findtext("title", default="N/A")).replace(";", " ").replace("#", " ")
-                i = b.findtext("isbn", default="0")
-                a = b.findtext("publication_year", default="0")
+                t = limpiar(get_text(b, "title", default="N/A")).replace(";", " ").replace("#", " ")
+                i = get_text(b, "isbn")
+                a = get_text(b, "publication_year")
                 similares.append(f"{t};{i};{a}")
 
         str_similares = "#".join(similares) if similares else "0"
@@ -51,13 +62,11 @@ def leer_xml(ruta):
 
 
 def main():
-    carpeta      = "./data_xml"
-    salida       = "cleaned_books.txt"
-    salida_tmp   = salida + ".tmp"
+    carpeta    = "./books_xml"
+    salida     = "cleaned_books.txt"
+    salida_tmp = salida + ".tmp"
 
-    archivos_xml = sorted(
-        [f for f in os.listdir(carpeta) if f.endswith(".xml")]
-    )
+    archivos_xml   = sorted([f for f in os.listdir(carpeta) if f.endswith(".xml")])
     total_archivos = len(archivos_xml)
 
     print(f"[INFO] Empezando parseo — {total_archivos} archivos encontrados")
