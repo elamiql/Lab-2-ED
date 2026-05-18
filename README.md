@@ -2,8 +2,6 @@
 
 Este proyecto procesa un dataset de 10.000 archivos XML de reseñas de libros de GoodReads, limpia y estructura la información mediante un script en Python, y posteriormente construye y consulta un árbol general en C++.
 
----
-
 ## Parser e Integración (Python)
 
 Para optimizar el rendimiento y evitar dependencias complejas en C++, se desarrolló un script extractor que consolida los 10.000 archivos XML en un único archivo plano de texto estructurado (`cleaned_books.txt`) escrito en Python.
@@ -33,7 +31,7 @@ El archivo generado contiene exactamente una línea por libro, utilizamos delimi
 
 `ID|Título|ISBN|Año|Idioma|Descripción|Rating|Páginas|TítuloSim1;ISBNSim1;AñoSim1#TítuloSim2;ISBNSim2;AñoSim2`
 
-## Compilación y Ejecución C++
+## Compilación y Ejecución en C++
 
 ### Instrucciones de Compilación
 
