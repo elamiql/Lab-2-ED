@@ -1,48 +1,137 @@
-# Entregable 2: Procesador de Dataset GoodReads (Árbol General)
+# Entregable 2: XML
+
+**Alumnos:**
+
+- Ignacio Silva
+- Agustín Salgado
 
 Este proyecto procesa un dataset de 10.000 archivos XML de reseñas de libros de GoodReads, limpia y estructura la información mediante un script en Python, y posteriormente construye y consulta un árbol general en C++.
 
-## Parser e Integración (Python)
+## Estructura del proyecto
 
-Para optimizar el rendimiento y evitar dependencias complejas en C++, se desarrolló un script extractor que consolida los 10.000 archivos XML en un único archivo plano de texto estructurado (`cleaned_books.txt`) escrito en Python.
+```
+.
+├── books_xml/          # Carpeta con los 10.000 archivos XML (no incluida en el repo)
+├── parser.py           # Script Python que parsea los XML y genera cleaned_books.txt
+├── cleaned_books.txt   # Archivo generado por el parser (no incluido en el repo)
+├── tree.hpp            # Declaración de la clase Tree y estructuras auxiliares
+├── tree.cpp            # Implementación del árbol general
+└── main.cpp            # Punto de entrada: carga el árbol y ejecuta las consultas
+```
 
-### Requisitos previos
+---
 
-- Python 3.x instalado.
-- Los 10.000 archivos XML deben estar dentro de una carpeta llamada `books_xml` en la raíz del proyecto.
+## Parser (Python)
 
-### Instrucciones de ejecución
+Para evitar dependencias complejas en C++, se desarrolló un script en Python que consolida los 10.000 archivos XML en un único archivo de texto estructurado (`cleaned_books.txt`).
 
-Para ejecutar el parser y limpiar los datos, ejecute el siguiente comando en la terminal:
+### Requisitos
+
+- Python 3.x
+- Carpeta `books_xml/` con los 10.000 archivos XML en la raíz del proyecto
+
+### Ejecución
 
 ```bash
 python parser.py
 ```
 
-### Archivo de Salida
+### Formato de salida
 
-El archivo generado contiene exactamente una línea por libro, utilizamos delimitadores específicos para evitar conflictos con los textos:
+Una línea por libro, con los siguientes delimitadores:
 
-- `|` Pipe: separa los campos principales del libro.
-- `#` Numeral: separa cada libro similar dentro del listado.
-- `;` Punto y coma: separa los subcampos de un libro similar (Título;ISBN;Año).
+- `|` separa los campos principales del libro
+- `#` separa libros similares entre sí
+- `;` separa los subcampos de cada libro similar (Título;ISBN;Año)
 
-### Formato de línea
+**Ejemplo de línea:**
 
-`ID|Título|ISBN|Año|Idioma|Descripción|Rating|Páginas|TítuloSim1;ISBNSim1;AñoSim1#TítuloSim2;ISBNSim2;AñoSim2`
+```
+ID|Título|ISBN|Año|Idioma|Descripción|Rating|Páginas|TítuloSim1;ISBNSim1;AñoSim1#TítuloSim2;ISBNSim2;AñoSim2
+```
 
-## Compilación y Ejecución en C++
+Si el libro no tiene similares, el último campo es `0`.
 
-### Instrucciones de Compilación
+---
 
-El código de C++ se compila utilizando el estándar C++11 o superior. Ejecute el siguiente comando en su terminal.
+## Compilación y ejecución (C++)
 
-`g++ -std=c++11 main.cpp -o programa`
+### Requisitos
 
-### Instrucciones de ejecución
+- Compilador g++ con soporte C++17
+- Archivo `cleaned_books.txt` generado previamente por el parser en el mismo directorio
 
-Una vez compilado, ejecute el binario asegurándose de que el archivo `cleaned_books.txt` se encuentra en el mismo directorio:
+### Compilación
 
 ```bash
-./programa
+g++ -std=c++17 -o tree main.cpp tree.cpp
+```
+
+### Ejecución
+
+**Linux / macOS:**
+
+```bash
+./tree
+```
+
+**Windows:**
+
+```bash
+tree.exe
+```
+
+---
+
+## Consultas implementadas
+
+| Función             | Descripción                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------- |
+| `listar()`          | Retorna los IDs de todos los libros en recorrido PreOrder                             |
+| `borrar_ratings(r)` | Elimina del árbol todos los libros con rating promedio ≤ r                            |
+| `precursores()`     | Retorna los IDs de libros cuyos similares fueron publicados todos en años posteriores |
+
+---
+
+## Compilación rápida
+
+**Desde cero (parsear XMLs + compilar + ejecutar):**
+
+```bash
+python parser.py && g++ -std=c++17 -o tree main.cpp tree.cpp && ./tree
+```
+
+**Solo compilar y ejecutar (si ya tienes `cleaned_books.txt`):**
+
+```bash
+g++ -std=c++17 -o tree main.cpp tree.cpp && ./tree
+```
+
+**Windows:**
+
+```bash
+python parser.py && g++ -std=c++17 -o tree main.cpp tree.cpp && tree.exe
+g++ -std=c++17 -o tree main.cpp tree.cpp && tree.exe
+```
+
+---
+
+## Ejemplo de salida
+
+```
+--- CARGANDO EL DATASET DE LIBROS AL ARBOL ---
+[INFO] Proceso de carga finalizado. Nodos totales en el árbol: 10000
+Tamaño inicial del árbol: 10000 libros.
+
+--- EJECUTANDO CONSULTA: listar() ---
+Total de IDs recuperados en PreOrder: 10000
+Primeros 5 IDs del recorrido: 1 10 10006 1000751 10008056
+
+--- EJECUTANDO CONSULTA: precursores() ---
+Cantidad de libros que son precursores de sus similares: 402
+Muestra de IDs precursores (primeros 5): 1015311 102327 1027760 102953 102954
+
+--- EJECUTANDO CONSULTA: borrar_ratings(3.5) ---
+Tamaño del árbol después del borrado masivo: 9647 libros.
+Nuevo total de IDs en el árbol: 9647
 ```
